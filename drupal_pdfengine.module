@@ -1,0 +1,490 @@
+<?php
+define('PDF_SCRIPT', '');
+define('PDF_GEN_LOC','/usr/local/bin/wkhtmltopdf');
+define('PDF_GENERATOR','wkhtmltopdf');
+define('PDF_SAVE_LOCATION','');
+
+spl_autoload_register(function($class) {
+    $file = __DIR__.'/lib/'.strtr($class, '\\', '/').'.php';
+    if (file_exists($file)) {
+        require $file;
+        return true;
+    }
+});
+
+
+function drupal_pdfengine_menu() {
+    $items['pdf_test'] = array(
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array ('pdf_generator' ),
+        'access callback' => true,
+        'type' => MENU_CALLBACK,
+    );
+    return $items;
+}
+
+
+function pdf_generator($form, $form_state){
+    global $base_url;
+    $drupal_form = 'html_form';
+    $param1 = '';
+    $param2 = '';
+    $title = 'PDF Title';
+    //Building the Options Array
+    $options = array();
+    $options['id'] = array(array('value'=>'body-wrapper-div','weight'=>'2'),array('value'=>'superbill_form','weight'=>'3'));
+    $options['remove_id'] = array('update_block');
+    $options['page'] = 'A4';
+    $options['destination'] = '';
+    $options['function']=array(array('call'=>'drupal_get_form','params'=>array($drupal_form,$param1,$param2)));
+    $options['destination'] = '/data/var/www/vhosts/demo.drupal.com/htdocs/sites/default/private_files/documents';
+    $options['base_url'] = $base_url;
+    $options['rewrite_base'] = array('image'=>true,'link'=>false);
+    $options['image_base_rewrite'] = array();
+//     $options['low_quality'] = false;
+    $options['cover'] = array('type'=>'html','content'=>'<image src="http://demo.drupal.com/sites/default/files/drupal_NEW.png"> This is drupal Test PDF Cover');
+    $options['skip_bootstrap'] = false;
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/modules/system/system.base.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/jquery_update/replace/ui/themes/base/jquery.ui.core.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/jquery_update/replace/ui/themes/base/jquery.ui.theme.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/jquery_update/replace/ui/themes/base/jquery.ui.resizable.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/jquery_update/replace/ui/themes/base/jquery.ui.dialog.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/carefolder_provider/providerHome.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/carefolder_provider/fullcalendar/css/fullcalendar.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/carefolder_provider/patient_detail.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/carefolder_api/full_calendar.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/cf_patient/css/icon_class.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/cf_datatable/DataTable/css/datatables_bootstrap.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/cf_datatable/DataTable/TableTools-2.0.1/media/css/TableTools.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/modules/arwmodules/drupal_referral/css/referral.css');
+//     $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/themes/bootstrap/css/simple_sidebar.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/themes/bootstrap/css/overrides.css');
+    $cssFiles[]= array('type'=>'url','content'=>'http://demo.drupal.com/sites/all/themes/bootstrap/css/style.css');
+    $options['css'] = $cssFiles;
+    $options['attach_css'] = array('type'=>'inline','position'=>'bottom','content'=>'*,*:before,*:after {-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box;}.textarea{line-height:1.5;border-radius:3px;display:block;width:100%;color:#555;vertical-align:middle;border:1px solid #ccc;min-height: 34px;padding: 6px 12px;}.hidden-sm{display:block!important}.hidden-xs{display:block!important};.order-col{width:80% !important};.col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
+  position: relative;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+}');
+    $options['exclude_class'] = array('hidden-xs','hidden-sm');
+
+    $options['external_html'] = array(array('content'=>$title,'weight'=>1));
+    $filename = 'private://documents/'.pdf_engine($options).'.pdf';
+    $form['viewport'] = array(
+        '#markup' => '<iframe src="'.$base_url.'/sites/all/modules/carnivalmodules/drupal_pdfengine/pdf_viewer/viewer/viewer.html?file='.file_create_url($filename).'" width="100%" height="100%" style="min-height:550px;height:100%"></iframe>'
+    );
+    return $form;
+    
+}
+
+function pdf_engine($options){
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    array_filter($options);
+    $filename = isset($options['filename']) && !empty($options['filename']) ? $options['filename'] : rand(0,999999);
+    $destination = isset($options['destination']) && !empty($options['destination']) ? $options['destination'] : PDF_SAVE_LOCATION;
+    $attachcss = isset($options['attach_css']) && !empty($options['attach_css']) ? $options['attach_css'] : array();
+    $css = '';
+    
+    $pdf[] = isset($options['page']) ? '--page-size '.$options['page']: '';
+    $pdf[] = isset($options['low_quality']) ? '--lowquality': '';
+    $pdf[] = isset($options['orientation']) && ($options['orientation'] == 'Landscape' || $options['orientation'] = 'L') ? '--orientation '.$options['orientation']: '';
+    $pdf[] = isset($options['cover']['type']) && isset($options['cover']['content']) && in_array($options['cover']['type'], array('html','file')) ? 'cover '.(($options['cover']['type']=='html')?file_unmanaged_save_data($options['cover']['content'],$destination.'/'.$filename.'-cover.html', FILE_EXISTS_REPLACE):($options['cover']['type']=='file'?$options['cover']['content']:'')): '';
+    
+    if(isset($options['margin'])){
+        $pdf[] = isset($options['margin']['bottom']) ? '--margin-bottom '.$options['margin']['bottom']: '';
+        $pdf[] = isset($options['margin']['left']) ? '--margin-left '.$options['margin']['left']: '';
+        $pdf[] = isset($options['margin']['right']) ? '--margin-right '.$options['margin']['right']: '';
+        $pdf[] = isset($options['margin']['top']) ? '--margin-top '.$options['margin']['top']: '';
+    }
+    if(isset($options['skip_bootstrap']) && $options['skip_bootstrap'] == false) {
+        $options['css'][]= array('type'=>'url','content'=>'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css');
+    }
+
+    if(isset($options['header'])){
+        $pdf[] = isset($options['header']['center']) ? '--header-center '.$options['header']['center']: '';
+        $pdf[] = isset($options['header']['font-name']) ? '--header-font-name '.$options['header']['font-name']: '';
+        $pdf[] = isset($options['header']['font-size']) ? '--header-font-size '.$options['header']['font-size']: '';
+        $pdf[] = isset($options['header']['left']) ? '--header-left '.$options['header']['left']: '';
+        $pdf[] = isset($options['header']['line']) ? '--header-line': '';
+        $pdf[] = isset($options['header']['right']) ? '--header-right '.$options['header']['right']: '';
+        $pdf[] = isset($options['header']['spacing']) ? '--header-spacing '.$options['header']['spacing']: '';
+    }
+    
+    if(isset($options['footer'])){
+        $pdf[] = isset($options['footer']['center']) ? '--footer-center '.$options['footer']['center']: '';
+        $pdf[] = isset($options['footer']['font-name']) ? '--footer-font-name '.$options['footer']['font-name']: '';
+        $pdf[] = isset($options['footer']['font-size']) ? '--footer-font-size '.$options['footer']['font-size']: '';
+        $pdf[] = isset($options['footer']['left']) ? '--footer-left '.$options['footer']['left']: '';
+        $pdf[] = isset($options['footer']['line']) ? '--footer-line': '';
+        $pdf[] = isset($options['footer']['right']) ? '--footer-right '.$options['footer']['right']: '';
+        $pdf[] = isset($options['footer']['spacing']) ? '--footer-spacing '.$options['footer']['spacing']: '';
+    }
+    
+    $pdf = array_filter($pdf);
+    $call_param = implode(' ',$pdf);
+    
+    $rawhtml = array();
+    if(count($options['function'])>0){
+        foreach ($options['function'] as $function){
+            $call = isset($function['call']) && !empty($function['call']) ? $function['call'] : 'drupal_get_form';
+            $params = isset($function['params']) && !empty($function['params']) ? $function['params'] : array('pdf_engine_warning');
+            $array = call_user_func_array($call, $params);
+            $rawhtml[] = drupal_render($array);
+        }
+    }
+    if(count($options['external_html'])>0){
+        $i=0;
+        foreach ($options['external_html'] as $exhtml){
+            $rawhtml[] = '<div id="cpdf_ext_'.$i.'">'.$exhtml['content'].'</div>';
+            $ex_weight = isset($exhtml['weight']) ? $exhtml['weight'] : 1;
+            $options['id'][]= array('value'=>'cpdf_ext_'.$i,'weight'=>$ex_weight);
+            $i++;
+        }
+    }
+    $inputhtml = implode("",$rawhtml);
+    watchdog('pdf_engine','Input html -'. $inputhtml);
+    $options['id'] = msort($options['id'], array('weight'));
+    $outputhtml = array();
+
+    
+    if(count($options['id'])>0){
+        $doc = new DOMDocument;
+        $doc->recover = true;
+        $doc->strictErrorChecking = false;
+        @$doc->loadHTML($inputhtml);
+        $xpath = new DOMXPath($doc);
+        foreach ($options['id'] as $id){
+            $query = "//div[@id='".$id['value']."']";
+            $entries = $xpath->query($query);
+            if($entries->length>0){
+                foreach ( $entries->item(0)->childNodes as $node ) {
+                    $outputhtml[] .= $doc->saveHTML($node);
+                }
+            }
+        }
+        $completehtml = implode("",$outputhtml);
+    } else {
+        $completehtml = $inputhtml;
+    }
+    
+    $outputhtml = array();
+    if(count($options['remove_id'])>0){
+        $doc = new DOMDocument;
+        $doc->recover = true;
+        $doc->strictErrorChecking = false;
+        @$doc->loadHTML($completehtml);
+        $xpath = new DOMXPath($doc);
+        foreach ($options['remove_id'] as $remove_id){
+            $div = $doc->getElementById($remove_id);
+            drupal_set_message(print_r($div,1));
+            if(isset($div)){
+                $div->parentNode->removeChild($div);
+            }
+            $completehtml = $doc->saveHTML();
+        }
+    }
+
+//     replace_text_area($completehtml);
+//     replace_select($completehtml);
+    process_html($completehtml, $options);
+    $classList = get_class_name($completehtml);
+    $cssList = array();
+    if(isset($options['css'])){
+        foreach ($options['css'] as $cssFile){
+            if($cssFile['type']=='url'){
+                $cssList[] = $cssFile['content'];
+            }
+        }
+        if(isset($options['exclude_class'])){
+            $classList = array_diff($classList, $options['exclude_class']);
+        }
+        $css = parse_minified_css($classList,$cssList);
+    }
+    $html = process_css($completehtml,$css,$attachcss);
+
+    file_unmanaged_save_data($html, $destination.'/'.$filename.'.html', FILE_EXISTS_REPLACE);
+    $command = PDF_GEN_LOC.' '.$call_param.' '.$destination.'/'.$filename.'.html '.$destination.'/'.$filename.'.pdf';
+    watchdog('PDF Engine', $command);
+    shell_exec($command);
+    return $filename;
+}
+
+function get_class_name(&$html){
+    $doc = new DOMDocument();
+    $classList = array();
+    $doc->recover = true;
+    $doc->strictErrorChecking = false;
+    @$doc->loadHTML($html);
+    $xpath = new DOMXPath($doc);
+    $query = "//*/@class";
+    $entries = $xpath->query($query);
+    if($entries->length > 0){
+        for($i=0; $i< $entries->length ; $i++){
+            foreach ( $entries->item($i)->childNodes as $node ) {
+                $classes = isset($node->data) ? explode(" ", $node->data) : array();
+                foreach($classes as $class){
+                    $classList[] = $class;
+                }
+            }
+        }
+    }
+    $classList = array_unique($classList, SORT_STRING);
+    return $classList;
+}
+
+function msort($array, $key, $sort_flags = SORT_REGULAR) {
+    if (is_array($array) && count($array) > 0) {
+        if (!empty($key)) {
+            $mapping = array ();
+            foreach ( $array as $k => $v ) {
+                $sort_key = '';
+                if (!is_array($key)) {
+                    $sort_key = $v[$key];
+                } else {
+                    foreach ( $key as $key_key ) {
+                        $sort_key .= $v[$key_key];
+                    }
+                    $sort_flags = SORT_STRING;
+                }
+                $mapping[$k] = $sort_key;
+            }
+            asort($mapping, $sort_flags);
+            $sorted = array ();
+            foreach ( $mapping as $k => $v ) {
+                $sorted[] = $array[$k];
+            }
+            return $sorted;
+        }
+    }
+    return $array;
+}
+
+function pdf_engine_warning($form, $form_state){
+    $form['pdf'] = array(
+        '#markup' => '<h2>Generating Test PDF. No Parameter Defined.</h2>'
+    );
+    return $form;
+}
+
+function process_css($html,$css,$attachcss=array()) {
+    if (isset($attachcss['position']) && isset($attachcss['content']) && isset($attachcss['type'])) {
+        $att = '<link rel="stylesheet" type="text/css" href="' . $attachcss['content'] . '">';
+        if ($attachcss['position'] == 'top') {
+            $css = ($attachcss['type'] == 'inline') ? '<style>' . $attachcss['content'] . $css . '</style>' :  '';
+        } else {
+            $css = ($attachcss['type'] == 'inline') ? '<style>' . $css . $attachcss['content'] . '</style>' :  '';
+        }
+    } else {
+      $css = '<style>' . $css . '</style>';
+    }
+    $html = '<html><head>' . $css . '</head><body>' . $html . '</body></html>';
+    return $html;
+}
+
+
+function process_html(&$html,$options){
+    if(isset($options['rewrite_base']) && isset($options['base_url'])){
+        if(isset($options['rewrite_base']['image']) && $options['rewrite_base']['image'] = true){
+            $ids = isset($options['image_base_rewrite']) ? $options['image_base_rewrite'] : array();
+            array_filter($ids);
+            image_base_url_rewrite($html,$options['base_url'],$ids);
+        }
+        if(isset($options['rewrite_base']['link']) && $options['rewrite_base']['link'] = true){
+            $ids = isset($options['anchor_base_rewrite']) ? $options['anchor_base_rewrite'] : array();
+            array_filter($ids);
+            anchor_base_url_rewrite($html,$options['base_url'],$ids);
+        }
+    }
+}
+
+function image_base_url_rewrite(&$html,$base_url,$ids = array()){
+    array_filter($ids);
+    $doc = new DOMDocument();
+    @$doc->loadHTML($html);
+    $xpath = new DOMXpath($doc);
+    $imgs = @$xpath->query("//img");
+    for ($i=0; $i < $imgs->length; $i++) {
+        $img = $imgs->item($i);
+        foreach($img->childNodes as $node) {
+        }
+        $src = $img->getAttribute("src");
+        $img->setAttribute("src",make_absolute($src,$base_url));
+    }
+    // For image with <image> tag
+    $imgs = @$xpath->query("//image");
+    for ($i=0; $i < $imgs->length; $i++) {
+        $img = $imgs->item($i);
+        foreach($img->childNodes as $node) {
+        }
+        $src = $img->getAttribute("src");
+        $img->setAttribute("src",make_absolute($src,$base_url));
+    }
+    $html = $doc->saveHTML();
+}
+
+function replace_text_area(&$html,$ids = array()){
+    array_filter($ids);
+    $doc = new DOMDocument();
+    @$doc->loadHTML($html);
+    $xpath = new DOMXpath($doc);
+    $textareas = @$xpath->query("//textarea");
+    for ($i=0; $i < $textareas->length; $i++) {
+        $textarea = $textareas->item($i);
+        $value = !empty($textarea->nodeValue) ? $textarea->nodeValue :'&nbsp;';
+        $element = $doc->createElement('div', $value);
+        $element->setAttribute("class", "textarea");
+        $textarea->parentNode->appendChild($element);
+        $textarea->parentNode->removeChild($textarea);
+    }
+    $html = $doc->saveHTML();
+}
+
+function replace_select(&$html,$ids = array()){
+    array_filter($ids);
+    $doc = new DOMDocument();
+    @$doc->loadHTML($html);
+    $xpath = new DOMXpath($doc);
+    $selects = @$xpath->query("//select");
+    for ($i=0; $i < $selects->length; $i++) {
+        $select = $selects->item($i);
+        $options = $select->getElementsByTagName('option');
+        foreach($options as $option) {
+            if ($option->hasAttribute('selected')) {
+                $value = $option->getAttribute('value');
+                $Optiontext = $option->textContent;
+                $optionInfo = array ('value' => $value,'text' => $Optiontext );
+            }
+        }
+        $value = !empty($Optiontext) ? $Optiontext :'&nbsp;';
+        $element = $doc->createElement('div', $value);
+        $element->setAttribute("class", "textarea");
+        $select->parentNode->appendChild($element);
+        $select->parentNode->removeChild($select);
+    }
+    $html = $doc->saveHTML();
+}
+
+function anchor_base_url_rewrite(&$html,$base_url,$ids = array()){
+    array_filter($ids);
+    $doc = new DOMDocument();
+    @$doc->loadHTML($html);
+    $xpath = new DOMXpath($doc);
+    if(isset($ids)){
+        foreach($ids as $id){
+            $imgs = $xpath->query("//a[@id='".$id."']");
+            for ($i=0; $i < $imgs->length; $i++) {
+                $img = $imgs->item($i);
+                $src = $img->getAttribute("href");
+                $img->setAttribute("href",$base_url.$src);
+            }
+        }
+    } else {
+        $imgs = $xpath->query("//a");
+        for ($i=0; $i < $imgs->length; $i++) {
+            $img = $imgs->item($i);
+            $src = $img->getAttribute("href");
+            $img->setAttribute("href",$base_url.$src);
+        }
+    }
+}
+
+
+function get_minified_css($classList = array(),$css= null){
+    watchdog('debug_PDF','Loaded CSS-'.$css);
+    if (isset($css) || count($classList) > 0 && (file_exists($css))) {
+        $oParser = new Sabberworm\CSS\Parser(file_get_contents($css));
+        $oDoc = $oParser->parse();
+        $classes = $classList; // array ('sf-menu','msg-header','.msg-sender','msg-count','active' );
+        $selector = array ();
+        $totalcounter = 0;
+        $selectedcounter = 0;
+        foreach ( $oDoc->getAllDeclarationBlocks() as $oBlock ) {
+            foreach ( $oBlock->getSelectors() as $oSelector ) {
+                $selected_class = $oSelector->getSelector();
+                foreach ( $classes as $class ) {
+                    if (@strpos($selected_class, $class) !== false) {
+                        $selector[] = $oSelector->getSelector();
+                        $selectedcounter++;
+                    }
+                }
+                $totalcounter++;
+            }
+        }
+        array_unique($selector);
+        foreach ( $oDoc->getAllDeclarationBlocks() as $oBlocks ) {
+            foreach ( $oBlocks as $key => $oBlock ) {
+                $flag = 0;
+                foreach ( $oBlock as $key2 => $sSelector ) {
+                    if (isset($sSelector->sSelector)) {
+                        if (!in_array($sSelector->sSelector, $selector)) {
+                            $flag = 1;
+                        } else {
+                            $flag = 0;
+                        }
+                        foreach ( $classes as $class ) {
+                            if (@strpos($sSelector->sSelector, $class) !== false) {
+                                $flag = 0;
+                            }
+                        }
+                    }
+                }
+                if ($flag) {
+                    $oDoc->remove($oBlocks);
+                }
+            }
+        }
+        return $oDoc->render();
+    }
+}
+
+
+function parse_minified_css($classList,$cssList= array(), $inline = true){
+    $data = array();
+    foreach($cssList as $css){
+        $data[] = get_minified_css($classList,$css);
+    }
+    return implode("", $data);
+}
+
+function make_absolute($url, $base)
+{
+    // Return base if no url
+    if( ! $url) return $base;
+
+    // Return if already absolute URL
+    if(parse_url($url, PHP_URL_SCHEME) != '') return $url;
+
+    // Urls only containing query or anchor
+    if($url[0] == '#' || $url[0] == '?') return $base.$url;
+
+    // Parse base URL and convert to local variables: $scheme, $host, $path
+    extract(parse_url($base));
+
+    // If no path, use /
+    if( ! isset($path)) $path = '/';
+
+    // Remove non-directory element from path
+    $path = preg_replace('#/[^/]*$#', '', $path);
+
+    // Destroy path if relative url points to root
+    if($url[0] == '/') $path = '';
+
+    // Dirty absolute URL
+    $abs = "$host$path/$url";
+
+    // Replace '//' or '/./' or '/foo/../' with '/'
+    $re = array('#(/\.?/)#', '#/(?!\.\.)[^/]+/\.\./#');
+    for($n = 1; $n > 0; $abs = preg_replace($re, '/', $abs, -1, $n)) {}
+
+    // Absolute URL is ready!
+    return $scheme.'://'.$abs;
+}
+
+function site_drupal_css(){
+    $cssFiles = array();
+    $cssFiles[]= array('type'=>'url','content'=>'http://test.website.com/modules/system/system.base.css');
+
+    return $cssFiles;
+}
